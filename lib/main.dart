@@ -1,10 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_pagination/empty_list_widget.dart';
 import 'package:flutter_pagination/pagination_widget.dart';
-import 'package:flutter_pagination/refresh_list_widget.dart';
-import 'package:pull_to_refresh/pull_to_refresh.dart';
 import 'package:http/http.dart' as http;
 
 void main() {
@@ -34,9 +31,6 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  final _scrollController = ScrollController();
-  final _refreshController = RefreshController();
-
   final List<String> _items = [];
   int _page = 1;
   bool _hasMore = true;
@@ -51,34 +45,12 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   @override
-  void dispose() {
-    _scrollController.dispose();
-    _refreshController.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: SafeArea(
         child: MyPaginationWidget(
           onLoadMore: _getPosts,
-          child: Scrollbar(
-            controller: _scrollController,
-            thumbVisibility: true,
-            interactive: true,
-            child: ListRefreshWidget(
-              scrollController: _scrollController,
-              refreshController: _refreshController,
-              refresh: _onRefresh,
-              loading: _onRefreshLoading,
-              list: _items.isEmpty
-                  ? _isLoading
-                  ? const Center(
-                child: CircularProgressIndicator(),
-              )
-                  : const EmptyListWidget()
-                  : ListView.builder(
+          child: ListView.builder(
                 padding: EdgeInsets.all(8),
                 itemCount: _items.length + 1,
                 itemBuilder: (context, index) {
@@ -92,8 +64,6 @@ class _MyHomePageState extends State<MyHomePage> {
               ),
             ),
           ),
-        ),
-      ),
     );
   }
 
@@ -162,27 +132,6 @@ class _MyHomePageState extends State<MyHomePage> {
       _hasError = true;
       setState(() {});
     }
-  }
-
-  void _onRefresh() {
-    _refreshController.refreshCompleted();
-    _clearPagination();
-    _getPosts();
-  }
-
-  void _onRefreshLoading() {
-    _refreshController.refreshCompleted();
-    _clearPagination();
-    _getPosts();
-    _refreshController.loadComplete();
-  }
-
-  void _clearPagination() {
-    _isLoading = false;
-    _items.clear();
-    _hasMore = true;
-    _page = 1;
-    _hasError = false;
   }
 }
 
